@@ -4,6 +4,7 @@ Study session management endpoints
 
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -29,12 +30,18 @@ def get_session_service(db: Session = Depends(get_db)) -> SessionService:
 @router.get("/", response_model=List[StudySessionResponse])
 async def get_sessions(
     subject_id: Optional[str] = None,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     session_service: SessionService = Depends(get_session_service)
 ):
     """Get all study sessions for the current user"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         sessions = session_service.get_sessions(user_id, subject_id)
         return sessions
     except Exception as e:
@@ -47,12 +54,18 @@ async def get_sessions(
 @router.post("/", response_model=StudySessionResponse, status_code=status.HTTP_201_CREATED)
 async def create_session(
     session_data: StudySessionCreate,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     session_service: SessionService = Depends(get_session_service)
 ):
     """Create a new study session"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         session = session_service.create_session(user_id, session_data)
         return session
     except Exception as e:
@@ -65,12 +78,18 @@ async def create_session(
 @router.post("/start", response_model=StudySessionResponse, status_code=status.HTTP_201_CREATED)
 async def start_session(
     start_data: StudySessionStart,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     session_service: SessionService = Depends(get_session_service)
 ):
     """Start a new study session"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         session = session_service.start_session(user_id, start_data)
         return session
     except Exception as e:
@@ -83,12 +102,18 @@ async def start_session(
 @router.get("/{session_id}", response_model=StudySessionResponse)
 async def get_session(
     session_id: str,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     session_service: SessionService = Depends(get_session_service)
 ):
     """Get a specific study session"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         session = session_service.get_session(session_id, user_id)
         
         if not session:
@@ -109,12 +134,18 @@ async def get_session(
 async def update_session(
     session_id: str,
     session_data: StudySessionUpdate,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     session_service: SessionService = Depends(get_session_service)
 ):
     """Update a study session"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         session = session_service.update_session(session_id, user_id, session_data)
         return session
     except Exception as e:
@@ -128,12 +159,18 @@ async def update_session(
 async def complete_session(
     session_id: str,
     complete_data: StudySessionComplete,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     session_service: SessionService = Depends(get_session_service)
 ):
     """Complete a study session"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         session = session_service.complete_session(
             session_id, 
             user_id, 
@@ -151,12 +188,18 @@ async def complete_session(
 @router.delete("/{session_id}")
 async def delete_session(
     session_id: str,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     session_service: SessionService = Depends(get_session_service)
 ):
     """Delete a study session"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         success = session_service.delete_session(session_id, user_id)
         
         if not success:
@@ -176,12 +219,18 @@ async def delete_session(
 @router.get("/stats", response_model=StudySessionStats)
 async def get_session_stats(
     subject_id: Optional[str] = None,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     session_service: SessionService = Depends(get_session_service)
 ):
     """Get study session statistics"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         stats = session_service.get_session_stats(user_id, subject_id)
         return stats
     except Exception as e:

@@ -4,6 +4,7 @@ Exam management endpoints
 
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -31,12 +32,18 @@ def get_exam_service(db: Session = Depends(get_db)) -> ExamService:
 @router.get("/", response_model=List[ExamResponse])
 async def get_exams(
     subject_id: Optional[str] = None,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     exam_service: ExamService = Depends(get_exam_service)
 ):
     """Get all exams for the current user"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         exams = exam_service.get_exams(user_id, subject_id)
         return exams
     except Exception as e:
@@ -49,12 +56,18 @@ async def get_exams(
 @router.post("/", response_model=ExamResponse, status_code=status.HTTP_201_CREATED)
 async def create_exam(
     exam_data: ExamCreate,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     exam_service: ExamService = Depends(get_exam_service)
 ):
     """Create a new exam"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         exam = exam_service.create_exam(user_id, exam_data)
         return exam
     except Exception as e:
@@ -67,12 +80,18 @@ async def create_exam(
 @router.get("/{exam_id}", response_model=ExamResponse)
 async def get_exam(
     exam_id: str,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     exam_service: ExamService = Depends(get_exam_service)
 ):
     """Get a specific exam"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         exam = exam_service.get_exam(exam_id, user_id)
         
         if not exam:
@@ -93,12 +112,18 @@ async def get_exam(
 async def update_exam(
     exam_id: str,
     exam_data: ExamUpdate,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     exam_service: ExamService = Depends(get_exam_service)
 ):
     """Update an exam"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         exam = exam_service.update_exam(exam_id, user_id, exam_data)
         return exam
     except Exception as e:
@@ -111,12 +136,18 @@ async def update_exam(
 @router.delete("/{exam_id}")
 async def delete_exam(
     exam_id: str,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     exam_service: ExamService = Depends(get_exam_service)
 ):
     """Delete an exam"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         success = exam_service.delete_exam(exam_id, user_id)
         
         if not success:
@@ -136,12 +167,18 @@ async def delete_exam(
 @router.post("/{exam_id}/start", response_model=ExamResponse)
 async def start_exam(
     exam_id: str,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     exam_service: ExamService = Depends(get_exam_service)
 ):
     """Start an exam session"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         exam = exam_service.start_exam(exam_id, user_id)
         return exam
     except Exception as e:
@@ -155,12 +192,18 @@ async def start_exam(
 async def submit_exam(
     exam_id: str,
     submit_data: ExamSubmitRequest,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     exam_service: ExamService = Depends(get_exam_service)
 ):
     """Submit exam answers"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         result = exam_service.submit_exam(exam_id, user_id, submit_data.answers)
         return result
     except Exception as e:
@@ -173,12 +216,18 @@ async def submit_exam(
 @router.get("/{exam_id}/results", response_model=ExamResult)
 async def get_exam_results(
     exam_id: str,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     exam_service: ExamService = Depends(get_exam_service)
 ):
     """Get exam results (placeholder)"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         # This would retrieve saved results from study sessions
         raise HTTPException(
             status_code=status.HTTP_501_NOT_IMPLEMENTED,
@@ -194,12 +243,18 @@ async def get_exam_results(
 @router.post("/generate", response_model=ExamResponse, status_code=status.HTTP_201_CREATED)
 async def generate_exam(
     generation_data: ExamGenerationRequest,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     exam_service: ExamService = Depends(get_exam_service)
 ):
     """Generate exam using AI"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         exam = await exam_service.generate_exam(user_id, generation_data)
         return exam
     except Exception as e:
@@ -212,12 +267,18 @@ async def generate_exam(
 @router.get("/stats", response_model=ExamStats)
 async def get_exam_stats(
     subject_id: Optional[str] = None,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     exam_service: ExamService = Depends(get_exam_service)
 ):
     """Get exam statistics"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         stats = exam_service.get_exam_stats(user_id, subject_id)
         return stats
     except Exception as e:

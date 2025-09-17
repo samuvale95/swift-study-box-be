@@ -4,6 +4,7 @@ Concept map management endpoints
 
 from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -34,12 +35,18 @@ def get_concept_map_service(db: Session = Depends(get_db)) -> ConceptMapService:
 @router.get("/", response_model=List[ConceptMapResponse])
 async def get_concept_maps(
     subject_id: Optional[str] = None,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     concept_map_service: ConceptMapService = Depends(get_concept_map_service)
 ):
     """Get all concept maps for the current user"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         concept_maps = concept_map_service.get_concept_maps(user_id, subject_id)
         return concept_maps
     except Exception as e:
@@ -52,12 +59,18 @@ async def get_concept_maps(
 @router.post("/", response_model=ConceptMapResponse, status_code=status.HTTP_201_CREATED)
 async def create_concept_map(
     concept_map_data: ConceptMapCreate,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     concept_map_service: ConceptMapService = Depends(get_concept_map_service)
 ):
     """Create a new concept map"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         concept_map = concept_map_service.create_concept_map(user_id, concept_map_data)
         return concept_map
     except Exception as e:
@@ -70,12 +83,18 @@ async def create_concept_map(
 @router.get("/{concept_map_id}", response_model=ConceptMapResponse)
 async def get_concept_map(
     concept_map_id: str,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     concept_map_service: ConceptMapService = Depends(get_concept_map_service)
 ):
     """Get a specific concept map"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         concept_map = concept_map_service.get_concept_map(concept_map_id, user_id)
         
         if not concept_map:
@@ -96,12 +115,18 @@ async def get_concept_map(
 async def update_concept_map(
     concept_map_id: str,
     concept_map_data: ConceptMapUpdate,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     concept_map_service: ConceptMapService = Depends(get_concept_map_service)
 ):
     """Update a concept map"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         concept_map = concept_map_service.update_concept_map(concept_map_id, user_id, concept_map_data)
         return concept_map
     except Exception as e:
@@ -114,12 +139,18 @@ async def update_concept_map(
 @router.delete("/{concept_map_id}")
 async def delete_concept_map(
     concept_map_id: str,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     concept_map_service: ConceptMapService = Depends(get_concept_map_service)
 ):
     """Delete a concept map"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         success = concept_map_service.delete_concept_map(concept_map_id, user_id)
         
         if not success:
@@ -140,12 +171,18 @@ async def delete_concept_map(
 async def create_concept_node(
     concept_map_id: str,
     node_data: ConceptNodeCreate,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     concept_map_service: ConceptMapService = Depends(get_concept_map_service)
 ):
     """Create a concept node"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         node = concept_map_service.create_concept_node(concept_map_id, user_id, node_data)
         return node
     except Exception as e:
@@ -160,12 +197,18 @@ async def update_concept_node(
     concept_map_id: str,
     node_id: str,
     node_data: ConceptNodeUpdate,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     concept_map_service: ConceptMapService = Depends(get_concept_map_service)
 ):
     """Update a concept node"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         node = concept_map_service.update_concept_node(
             concept_map_id, 
             node_id, 
@@ -184,12 +227,18 @@ async def update_concept_node(
 async def delete_concept_node(
     concept_map_id: str,
     node_id: str,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     concept_map_service: ConceptMapService = Depends(get_concept_map_service)
 ):
     """Delete a concept node"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         success = concept_map_service.delete_concept_node(concept_map_id, node_id, user_id)
         
         if not success:
@@ -210,12 +259,18 @@ async def delete_concept_node(
 async def create_concept_connection(
     concept_map_id: str,
     connection_data: ConceptConnectionCreate,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     concept_map_service: ConceptMapService = Depends(get_concept_map_service)
 ):
     """Create a concept connection"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         connection = concept_map_service.create_concept_connection(concept_map_id, user_id, connection_data)
         return connection
     except Exception as e:
@@ -230,12 +285,18 @@ async def update_concept_connection(
     concept_map_id: str,
     connection_id: str,
     connection_data: ConceptConnectionUpdate,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     concept_map_service: ConceptMapService = Depends(get_concept_map_service)
 ):
     """Update a concept connection"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         connection = concept_map_service.update_concept_connection(
             concept_map_id, 
             connection_id, 
@@ -254,12 +315,18 @@ async def update_concept_connection(
 async def delete_concept_connection(
     concept_map_id: str,
     connection_id: str,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     concept_map_service: ConceptMapService = Depends(get_concept_map_service)
 ):
     """Delete a concept connection"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         success = concept_map_service.delete_concept_connection(concept_map_id, connection_id, user_id)
         
         if not success:
@@ -279,12 +346,18 @@ async def delete_concept_connection(
 @router.post("/generate", response_model=ConceptMapResponse, status_code=status.HTTP_201_CREATED)
 async def generate_concept_map(
     generation_data: ConceptMapGenerationRequest,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     concept_map_service: ConceptMapService = Depends(get_concept_map_service)
 ):
     """Generate concept map using AI"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         concept_map = await concept_map_service.generate_concept_map(user_id, generation_data)
         return concept_map
     except Exception as e:
@@ -297,12 +370,18 @@ async def generate_concept_map(
 @router.get("/stats", response_model=ConceptMapStats)
 async def get_concept_map_stats(
     subject_id: Optional[str] = None,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     concept_map_service: ConceptMapService = Depends(get_concept_map_service)
 ):
     """Get concept map statistics"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         stats = concept_map_service.get_concept_map_stats(user_id, subject_id)
         return stats
     except Exception as e:

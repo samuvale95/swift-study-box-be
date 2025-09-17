@@ -3,6 +3,7 @@ User management endpoints
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -20,12 +21,18 @@ def get_auth_service(db: Session = Depends(get_db)) -> AuthService:
 
 @router.get("/profile", response_model=UserResponse)
 async def get_profile(
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     auth_service: AuthService = Depends(get_auth_service)
 ):
     """Get user profile"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         user = auth_service.get_user_by_id(user_id)
         
         if not user:
@@ -45,12 +52,18 @@ async def get_profile(
 @router.put("/profile", response_model=UserResponse)
 async def update_profile(
     user_data: dict,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     auth_service: AuthService = Depends(get_auth_service)
 ):
     """Update user profile"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         user = auth_service.get_user_by_id(user_id)
         
         if not user:
@@ -77,12 +90,18 @@ async def update_profile(
 
 @router.get("/preferences")
 async def get_preferences(
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     auth_service: AuthService = Depends(get_auth_service)
 ):
     """Get user preferences"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         user = auth_service.get_user_by_id(user_id)
         
         if not user:
@@ -102,12 +121,18 @@ async def get_preferences(
 @router.put("/preferences")
 async def update_preferences(
     preferences: UserPreferencesUpdate,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     auth_service: AuthService = Depends(get_auth_service)
 ):
     """Update user preferences"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         user = auth_service.update_user_preferences(user_id, preferences.dict(exclude_unset=True))
         
         return user.preferences
@@ -120,12 +145,18 @@ async def update_preferences(
 
 @router.delete("/account")
 async def delete_account(
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     auth_service: AuthService = Depends(get_auth_service)
 ):
     """Delete user account"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         success = auth_service.deactivate_user(user_id)
         
         if not success:

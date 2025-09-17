@@ -4,6 +4,7 @@ Quiz management endpoints
 
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -31,12 +32,18 @@ def get_quiz_service(db: Session = Depends(get_db)) -> QuizService:
 @router.get("/", response_model=List[QuizResponse])
 async def get_quizzes(
     subject_id: Optional[str] = None,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     quiz_service: QuizService = Depends(get_quiz_service)
 ):
     """Get all quizzes for the current user"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         quizzes = quiz_service.get_quizzes(user_id, subject_id)
         return quizzes
     except Exception as e:
@@ -49,12 +56,18 @@ async def get_quizzes(
 @router.post("/", response_model=QuizResponse, status_code=status.HTTP_201_CREATED)
 async def create_quiz(
     quiz_data: QuizCreate,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     quiz_service: QuizService = Depends(get_quiz_service)
 ):
     """Create a new quiz"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         quiz = quiz_service.create_quiz(user_id, quiz_data)
         return quiz
     except Exception as e:
@@ -67,12 +80,18 @@ async def create_quiz(
 @router.get("/{quiz_id}", response_model=QuizResponse)
 async def get_quiz(
     quiz_id: str,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     quiz_service: QuizService = Depends(get_quiz_service)
 ):
     """Get a specific quiz"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         quiz = quiz_service.get_quiz(quiz_id, user_id)
         
         if not quiz:
@@ -93,12 +112,18 @@ async def get_quiz(
 async def update_quiz(
     quiz_id: str,
     quiz_data: QuizUpdate,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     quiz_service: QuizService = Depends(get_quiz_service)
 ):
     """Update a quiz"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         quiz = quiz_service.update_quiz(quiz_id, user_id, quiz_data)
         return quiz
     except Exception as e:
@@ -111,12 +136,18 @@ async def update_quiz(
 @router.delete("/{quiz_id}")
 async def delete_quiz(
     quiz_id: str,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     quiz_service: QuizService = Depends(get_quiz_service)
 ):
     """Delete a quiz"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         success = quiz_service.delete_quiz(quiz_id, user_id)
         
         if not success:
@@ -136,12 +167,18 @@ async def delete_quiz(
 @router.post("/{quiz_id}/start", response_model=QuizResponse)
 async def start_quiz(
     quiz_id: str,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     quiz_service: QuizService = Depends(get_quiz_service)
 ):
     """Start a quiz session"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         quiz = quiz_service.start_quiz(quiz_id, user_id)
         return quiz
     except Exception as e:
@@ -155,12 +192,18 @@ async def start_quiz(
 async def submit_quiz(
     quiz_id: str,
     submit_data: QuizSubmitRequest,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     quiz_service: QuizService = Depends(get_quiz_service)
 ):
     """Submit quiz answers"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         result = quiz_service.submit_quiz(quiz_id, user_id, submit_data.answers)
         return result
     except Exception as e:
@@ -173,12 +216,18 @@ async def submit_quiz(
 @router.get("/{quiz_id}/results", response_model=QuizResult)
 async def get_quiz_results(
     quiz_id: str,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     quiz_service: QuizService = Depends(get_quiz_service)
 ):
     """Get quiz results (placeholder)"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         # This would retrieve saved results from study sessions
         raise HTTPException(
             status_code=status.HTTP_501_NOT_IMPLEMENTED,
@@ -194,12 +243,18 @@ async def get_quiz_results(
 @router.post("/generate", response_model=QuizResponse, status_code=status.HTTP_201_CREATED)
 async def generate_quiz(
     generation_data: QuizGenerationRequest,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     quiz_service: QuizService = Depends(get_quiz_service)
 ):
     """Generate quiz using AI"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         quiz = await quiz_service.generate_quiz(user_id, generation_data)
         return quiz
     except Exception as e:
@@ -212,12 +267,18 @@ async def generate_quiz(
 @router.get("/stats", response_model=QuizStats)
 async def get_quiz_stats(
     subject_id: Optional[str] = None,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     quiz_service: QuizService = Depends(get_quiz_service)
 ):
     """Get quiz statistics"""
     try:
-        user_id = get_current_user_id(token)
+        if not credentials:
+
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        
+
+        user_id = get_current_user_id(credentials.credentials)
         stats = quiz_service.get_quiz_stats(user_id, subject_id)
         return stats
     except Exception as e:
