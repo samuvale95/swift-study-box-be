@@ -26,7 +26,7 @@ def generate_quiz_async(self, quiz_id: str, content: str, difficulty: str, num_q
         ai_service = AIService()
         
         # Generate questions using AI
-        ai_questions = await ai_service.generate_quiz_questions(content, difficulty, num_questions)
+        ai_questions = ai_service.generate_quiz_questions(content, difficulty, num_questions)
         
         # Create questions
         for ai_question in ai_questions:
@@ -72,7 +72,7 @@ def generate_concept_map_async(self, concept_map_id: str, content: str):
         ai_service = AIService()
         
         # Generate concept map using AI
-        ai_concept_map = await ai_service.generate_concept_map(content)
+        ai_concept_map = ai_service.generate_concept_map(content)
         
         # Create nodes
         node_id_mapping = {}

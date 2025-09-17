@@ -24,11 +24,11 @@ class StorageService:
                 region_name=settings.AWS_REGION
             )
     
-    async def upload_file(self, file_content: bytes, filename: str) -> str:
+    def upload_file(self, file_content: bytes, filename: str) -> str:
         """Upload file to storage"""
         if not self.s3_client or not settings.S3_BUCKET_NAME:
             # Fallback to local storage for development
-            return await self._upload_local(file_content, filename)
+            return self._upload_local(file_content, filename)
         
         try:
             key = f"uploads/{filename}"
@@ -42,21 +42,21 @@ class StorageService:
         except ClientError as e:
             raise CloudServiceError("S3", str(e))
     
-    async def download_file(self, url: str) -> bytes:
+    def download_file(self, url: str) -> bytes:
         """Download file from storage"""
         if url.startswith("s3://"):
-            return await self._download_s3(url)
+            return self._download_s3(url)
         else:
-            return await self._download_local(url)
+            return self._download_local(url)
     
-    async def delete_file(self, url: str) -> bool:
+    def delete_file(self, url: str) -> bool:
         """Delete file from storage"""
         if url.startswith("s3://"):
-            return await self._delete_s3(url)
+            return self._delete_s3(url)
         else:
-            return await self._delete_local(url)
+            return self._delete_local(url)
     
-    async def _upload_local(self, file_content: bytes, filename: str) -> str:
+    def _upload_local(self, file_content: bytes, filename: str) -> str:
         """Upload file to local storage"""
         import os
         os.makedirs("uploads", exist_ok=True)
@@ -67,12 +67,12 @@ class StorageService:
         
         return file_path
     
-    async def _download_local(self, file_path: str) -> bytes:
+    def _download_local(self, file_path: str) -> bytes:
         """Download file from local storage"""
         with open(file_path, "rb") as f:
             return f.read()
     
-    async def _delete_local(self, file_path: str) -> bool:
+    def _delete_local(self, file_path: str) -> bool:
         """Delete file from local storage"""
         import os
         try:
@@ -81,7 +81,7 @@ class StorageService:
         except FileNotFoundError:
             return False
     
-    async def _download_s3(self, url: str) -> bytes:
+    def _download_s3(self, url: str) -> bytes:
         """Download file from S3"""
         if not self.s3_client:
             raise CloudServiceError("S3", "S3 client not configured")
@@ -95,7 +95,7 @@ class StorageService:
         except ClientError as e:
             raise CloudServiceError("S3", str(e))
     
-    async def _delete_s3(self, url: str) -> bool:
+    def _delete_s3(self, url: str) -> bool:
         """Delete file from S3"""
         if not self.s3_client:
             raise CloudServiceError("S3", "S3 client not configured")

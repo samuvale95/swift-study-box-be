@@ -82,21 +82,37 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     
     async def _is_rate_limited(self, client_ip: str) -> bool:
         """Check if client is rate limited"""
-        key = f"rate_limit:{client_ip}"
-        current_requests = self.redis.get(key)
-        
-        if current_requests is None:
+        if not self.redis:
             return False
-        
-        return int(current_requests) >= settings.RATE_LIMIT_PER_MINUTE
+            
+        try:
+            key = f"rate_limit:{client_ip}"
+            current_requests = self.redis.get(key)
+            
+            if current_requests is None:
+                return False
+            
+            return int(current_requests) >= settings.RATE_LIMIT_PER_MINUTE
+        except Exception as e:
+            # If Redis is unavailable, allow request
+            logger.warning(f"Rate limiting unavailable: {e}")
+            return False
     
     async def _update_rate_limit(self, client_ip: str) -> None:
         """Update rate limit counter"""
-        key = f"rate_limit:{client_ip}"
-        
-        # Increment counter
-        current_requests = self.redis.incr(key)
-        
-        # Set expiration if this is the first request
-        if current_requests == 1:
-            self.redis.expire(key, 60)  # 1 minute
+        if not self.redis:
+            return
+            
+        try:
+            key = f"rate_limit:{client_ip}"
+            
+            # Increment counter
+            current_requests = self.redis.incr(key)
+            
+            # Set expiration if this is the first request
+            if current_requests == 1:
+                self.redis.expire(key, 60)  # 1 minute
+        except Exception as e:
+            # If Redis is unavailable, ignore
+            logger.warning(f"Rate limiting update failed: {e}")
+            pass

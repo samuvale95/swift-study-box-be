@@ -2,8 +2,8 @@
 Progress model and related schemas
 """
 
-from sqlalchemy import Column, String, Integer, Float, DateTime, ForeignKey, JSON, Text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, String, Integer, Float, DateTime, ForeignKey, JSON, Text, Boolean
+
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from typing import Optional, Dict, Any, List
@@ -18,8 +18,8 @@ class Progress(BaseModel):
     __tablename__ = "progress"
     
     # Foreign keys
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    subject_id = Column(UUID(as_uuid=True), ForeignKey("subjects.id"), nullable=True)  # Null for overall progress
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
+    subject_id = Column(String(36), ForeignKey("subjects.id"), nullable=True)  # Null for overall progress
     
     # Statistics
     total_sessions = Column(Integer, default=0)
@@ -29,8 +29,8 @@ class Progress(BaseModel):
     last_study_date = Column(DateTime(timezone=True), nullable=True)
     
     # Additional metadata
-    achievements = Column(JSON, default=list)
-    goals = Column(JSON, default=list)
+    achievements = Column(JSON, default=list)  # List of achievement IDs
+    goals = Column(JSON, default=list)  # List of goal IDs
     
     # Relationships
     user = relationship("User", back_populates="progress")
@@ -56,7 +56,7 @@ class Achievement(BaseModel):
     is_active = Column(Boolean, default=True)
     
     # Relationships
-    user_progress = relationship("Progress", back_populates="achievements")
+    # Achievement is a global configuration, no direct relationship needed
 
 
 class Goal(BaseModel):
@@ -70,8 +70,8 @@ class Goal(BaseModel):
     category = Column(String(50), nullable=False)  # study_time, quiz_score, etc.
     
     # Foreign keys
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    subject_id = Column(UUID(as_uuid=True), ForeignKey("subjects.id"), nullable=True)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
+    subject_id = Column(String(36), ForeignKey("subjects.id"), nullable=True)
     
     # Goal data
     target_value = Column(Float, nullable=False)

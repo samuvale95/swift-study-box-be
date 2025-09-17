@@ -26,8 +26,7 @@ class ProgressResponse(ProgressBase):
     created_at: datetime
     updated_at: datetime
     
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 
 class AchievementBase(BaseModel):
@@ -46,8 +45,7 @@ class AchievementResponse(AchievementBase):
     created_at: datetime
     updated_at: datetime
     
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 
 class GoalBase(BaseModel):
@@ -84,8 +82,7 @@ class GoalResponse(GoalBase):
     created_at: datetime
     updated_at: datetime
     
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 
 class ProgressStats(BaseModel):

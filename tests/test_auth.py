@@ -101,13 +101,24 @@ def test_get_current_user(setup_database):
     register_response = client.post(
         "/api/v1/auth/register",
         json={
-            "email": "test@example.com",
-            "name": "Test User",
+            "email": "test2@example.com",
+            "name": "Test User 2",
             "password": "testpassword123"
         }
     )
     
-    token = register_response.json()["access_token"]
+    if register_response.status_code == 201:
+        token = register_response.json()["access_token"]
+    else:
+        # User already exists, try to login
+        login_response = client.post(
+            "/api/v1/auth/login",
+            json={
+                "email": "test2@example.com",
+                "password": "testpassword123"
+            }
+        )
+        token = login_response.json()["access_token"]
     
     # Get current user
     response = client.get(
@@ -117,5 +128,5 @@ def test_get_current_user(setup_database):
     
     assert response.status_code == 200
     data = response.json()
-    assert data["email"] == "test@example.com"
-    assert data["name"] == "Test User"
+    assert data["email"] == "test2@example.com"
+    assert data["name"] == "Test User 2"

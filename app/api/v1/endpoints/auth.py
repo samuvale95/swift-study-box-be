@@ -3,7 +3,7 @@ Authentication endpoints
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status, Response
-from fastapi.security import HTTPBearer
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -114,11 +114,18 @@ async def logout(response: Response):
 
 @router.get("/me")
 async def get_current_user(
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     auth_service: AuthService = Depends(get_auth_service)
 ):
     """Get current user information"""
     try:
+        if not credentials:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials"
+            )
+        
+        token = credentials.credentials
         user_id = get_current_user_id(token)
         user = auth_service.get_user_by_id(user_id)
         
@@ -139,11 +146,18 @@ async def get_current_user(
 @router.put("/preferences")
 async def update_preferences(
     preferences: UserPreferencesUpdate,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     auth_service: AuthService = Depends(get_auth_service)
 ):
     """Update user preferences"""
     try:
+        if not credentials:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials"
+            )
+        
+        token = credentials.credentials
         user_id = get_current_user_id(token)
         user = auth_service.update_user_preferences(user_id, preferences.dict(exclude_unset=True))
         
@@ -158,11 +172,18 @@ async def update_preferences(
 @router.post("/change-password")
 async def change_password(
     password_data: PasswordChange,
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     auth_service: AuthService = Depends(get_auth_service)
 ):
     """Change user password"""
     try:
+        if not credentials:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials"
+            )
+        
+        token = credentials.credentials
         user_id = get_current_user_id(token)
         user = auth_service.get_user_by_id(user_id)
         

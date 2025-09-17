@@ -7,7 +7,7 @@ from typing import List, Optional, Dict, Any, Union
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
-from app.models.exam import Exam, ExamQuestion, UserAnswer
+from app.models.exam import Exam, ExamQuestion, ExamUserAnswer
 from app.models.upload import Upload
 from app.schemas.exam import (
     ExamCreate, 
@@ -135,7 +135,7 @@ class ExamService:
                 correct_answers += 1
             
             # Save user answer
-            user_answer = UserAnswer(
+            user_answer = ExamUserAnswer(
                 user_id=user_id,
                 exam_question_id=question.id,
                 answer=answer.answer,
@@ -172,14 +172,14 @@ class ExamService:
             ).all()
             
             for upload in uploads:
-                if upload.metadata and upload.metadata.get("extracted_text"):
-                    content += upload.metadata["extracted_text"] + "\n"
+                if upload.file_metadata and upload.file_metadata.get("extracted_text"):
+                    content += upload.file_metadata["extracted_text"] + "\n"
         
         if not content:
             raise ValidationError("No content available for exam generation")
         
         # Generate questions using AI
-        ai_questions = await self.ai_service.generate_quiz_questions(
+        ai_questions = self.ai_service.generate_quiz_questions(
             content, 
             generation_data.difficulty, 
             generation_data.num_questions
@@ -270,7 +270,7 @@ class ExamService:
         total_questions = sum(len(exam.questions) for exam in exams)
         
         # Calculate average score and pass rate from user answers
-        user_answers = self.db.query(UserAnswer).filter(UserAnswer.user_id == user_id).all()
+        user_answers = self.db.query(ExamUserAnswer).filter(ExamUserAnswer.user_id == user_id).all()
         total_score = sum(1 for answer in user_answers if answer.is_correct)
         total_answers = len(user_answers)
         average_score = (total_score / total_answers * 100) if total_answers > 0 else 0

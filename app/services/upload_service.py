@@ -32,19 +32,19 @@ class UploadService:
             raise FileProcessingError(f"File type {file_extension} not allowed")
         
         # Validate file size
-        file_content = await file.read()
+        file_content = file.file.read()
         if len(file_content) > settings.MAX_FILE_SIZE:
             raise FileProcessingError(f"File size exceeds maximum allowed size")
         
         # Reset file pointer
-        await file.seek(0)
+        file.file.seek(0)
         
         # Generate unique filename
         file_id = str(uuid.uuid4())
         filename = f"{file_id}.{file_extension}"
         
         # Upload to storage
-        url = await self.storage_service.upload_file(file_content, filename)
+        url = self.storage_service.upload_file(file_content, filename)
         
         # Create upload record
         upload = Upload(
@@ -62,7 +62,7 @@ class UploadService:
         self.db.refresh(upload)
         
         # Start background processing
-        await self._process_file_async(upload.id)
+        self._process_file_async(upload.id)
         
         return upload
     
@@ -89,7 +89,7 @@ class UploadService:
             return False
         
         # Delete from storage
-        await self.storage_service.delete_file(upload.url)
+        self.storage_service.delete_file(upload.url)
         
         # Delete from database
         self.db.delete(upload)
@@ -126,7 +126,7 @@ class UploadService:
             self.db.commit()
             
             # Process the file
-            await self._process_file_async(upload.id)
+            self._process_file_async(upload.id)
             
             return True
         except Exception as e:
@@ -137,7 +137,7 @@ class UploadService:
             
             return False
     
-    async def _process_file_async(self, upload_id: str) -> None:
+    def _process_file_async(self, upload_id: str) -> None:
         """Process file asynchronously"""
         upload = self.db.query(Upload).filter(Upload.id == upload_id).first()
         if not upload:
@@ -145,13 +145,13 @@ class UploadService:
         
         try:
             # Download file content
-            file_content = await self.storage_service.download_file(upload.url)
+            file_content = self.storage_service.download_file(upload.url)
             
             # Process based on file type
-            metadata = await self._extract_metadata(file_content, upload.type)
+            metadata = self._extract_metadata(file_content, upload.type)
             
             # Update upload with metadata
-            upload.metadata = metadata
+            upload.file_metadata = metadata
             upload.status = UploadStatus.COMPLETED.value
             upload.processed_at = datetime.utcnow()
             self.db.commit()
@@ -161,7 +161,7 @@ class UploadService:
             upload.processing_error = str(e)
             self.db.commit()
     
-    async def _extract_metadata(self, file_content: bytes, file_type: str) -> Dict[str, Any]:
+    def _extract_metadata(self, file_content: bytes, file_type: str) -> Dict[str, Any]:
         """Extract metadata from file content"""
         metadata = {
             "keywords": [],
@@ -171,21 +171,21 @@ class UploadService:
         try:
             if file_type == "pdf":
                 # Extract text from PDF
-                text = await self.ai_service.extract_pdf_text(file_content)
+                text = self.ai_service.extract_pdf_text(file_content)
                 metadata["extracted_text"] = text
-                metadata["pages"] = await self.ai_service.count_pdf_pages(file_content)
+                metadata["pages"] = self.ai_service.count_pdf_pages(file_content)
                 
             elif file_type in ["image"]:
                 # Extract text from image using OCR
-                text = await self.ai_service.extract_image_text(file_content)
+                text = self.ai_service.extract_image_text(file_content)
                 metadata["extracted_text"] = text
-                metadata["dimensions"] = await self.ai_service.get_image_dimensions(file_content)
+                metadata["dimensions"] = self.ai_service.get_image_dimensions(file_content)
                 
             elif file_type == "video":
                 # Extract audio and convert to text
-                text = await self.ai_service.extract_video_text(file_content)
+                text = self.ai_service.extract_video_text(file_content)
                 metadata["extracted_text"] = text
-                metadata["duration"] = await self.ai_service.get_video_duration(file_content)
+                metadata["duration"] = self.ai_service.get_video_duration(file_content)
                 
             elif file_type == "text":
                 # Process text content
@@ -194,12 +194,12 @@ class UploadService:
             
             # Generate summary and keywords
             if metadata.get("extracted_text"):
-                summary = await self.ai_service.generate_summary(metadata["extracted_text"])
-                keywords = await self.ai_service.extract_keywords(metadata["extracted_text"])
+                summary = self.ai_service.generate_summary(metadata["extracted_text"])
+                keywords = self.ai_service.extract_keywords(metadata["extracted_text"])
                 
                 metadata["summary"] = summary
                 metadata["keywords"] = keywords
-                metadata["language"] = await self.ai_service.detect_language(metadata["extracted_text"])
+                metadata["language"] = self.ai_service.detect_language(metadata["extracted_text"])
         
         except Exception as e:
             # If metadata extraction fails, still mark as completed

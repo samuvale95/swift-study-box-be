@@ -242,14 +242,14 @@ class ConceptMapService:
             ).all()
             
             for upload in uploads:
-                if upload.metadata and upload.metadata.get("extracted_text"):
-                    content += upload.metadata["extracted_text"] + "\n"
+                if upload.file_metadata and upload.file_metadata.get("extracted_text"):
+                    content += upload.file_metadata["extracted_text"] + "\n"
         
         if not content:
             raise ValidationError("No content available for concept map generation")
         
         # Generate concept map using AI
-        ai_concept_map = await self.ai_service.generate_concept_map(content)
+        ai_concept_map = self.ai_service.generate_concept_map(content)
         
         # Create concept map
         concept_map = ConceptMap(

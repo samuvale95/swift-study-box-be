@@ -3,7 +3,7 @@ Concept map model and related schemas
 """
 
 from sqlalchemy import Column, String, Integer, Float, Boolean, DateTime, ForeignKey, JSON, Text
-from sqlalchemy.dialects.postgresql import UUID
+
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from typing import Optional, Dict, Any, List
@@ -22,8 +22,8 @@ class ConceptMap(BaseModel):
     is_public = Column(Boolean, default=False)
     
     # Foreign keys
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    subject_id = Column(UUID(as_uuid=True), ForeignKey("subjects.id"), nullable=False)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
+    subject_id = Column(String(36), ForeignKey("subjects.id"), nullable=False)
     
     # Additional metadata
     description = Column(Text, nullable=True)
@@ -50,8 +50,8 @@ class ConceptNode(BaseModel):
     color = Column(String(7), default="#3B82F6")  # Hex color
     
     # Foreign keys
-    concept_map_id = Column(UUID(as_uuid=True), ForeignKey("concept_maps.id"), nullable=False)
-    source_upload_id = Column(UUID(as_uuid=True), ForeignKey("uploads.id"), nullable=True)
+    concept_map_id = Column(String(36), ForeignKey("concept_maps.id"), nullable=False)
+    source_upload_id = Column(String(36), ForeignKey("uploads.id"), nullable=True)
     
     # Content
     description = Column(Text, nullable=True)
@@ -78,9 +78,9 @@ class ConceptConnection(BaseModel):
     strength = Column(Float, default=1.0)  # 0-1
     
     # Foreign keys
-    concept_map_id = Column(UUID(as_uuid=True), ForeignKey("concept_maps.id"), nullable=False)
-    from_node_id = Column(UUID(as_uuid=True), ForeignKey("concept_nodes.id"), nullable=False)
-    to_node_id = Column(UUID(as_uuid=True), ForeignKey("concept_nodes.id"), nullable=False)
+    concept_map_id = Column(String(36), ForeignKey("concept_maps.id"), nullable=False)
+    from_node_id = Column(String(36), ForeignKey("concept_nodes.id"), nullable=False)
+    to_node_id = Column(String(36), ForeignKey("concept_nodes.id"), nullable=False)
     
     # Relationships
     concept_map = relationship("ConceptMap", back_populates="connections")

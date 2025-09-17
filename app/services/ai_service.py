@@ -21,7 +21,7 @@ class AIService:
         if settings.OPENAI_API_KEY:
             openai.api_key = settings.OPENAI_API_KEY
     
-    async def extract_pdf_text(self, file_content: bytes) -> str:
+    def extract_pdf_text(self, file_content: bytes) -> str:
         """Extract text from PDF"""
         try:
             pdf_file = io.BytesIO(file_content)
@@ -35,7 +35,7 @@ class AIService:
         except Exception as e:
             raise AIProcessingError(f"Failed to extract PDF text: {str(e)}")
     
-    async def count_pdf_pages(self, file_content: bytes) -> int:
+    def count_pdf_pages(self, file_content: bytes) -> int:
         """Count pages in PDF"""
         try:
             pdf_file = io.BytesIO(file_content)
@@ -44,7 +44,7 @@ class AIService:
         except Exception as e:
             raise AIProcessingError(f"Failed to count PDF pages: {str(e)}")
     
-    async def extract_image_text(self, file_content: bytes) -> str:
+    def extract_image_text(self, file_content: bytes) -> str:
         """Extract text from image using OCR"""
         try:
             image = Image.open(io.BytesIO(file_content))
@@ -53,7 +53,7 @@ class AIService:
         except Exception as e:
             raise AIProcessingError(f"Failed to extract image text: {str(e)}")
     
-    async def get_image_dimensions(self, file_content: bytes) -> Dict[str, int]:
+    def get_image_dimensions(self, file_content: bytes) -> Dict[str, int]:
         """Get image dimensions"""
         try:
             image = Image.open(io.BytesIO(file_content))
@@ -61,24 +61,24 @@ class AIService:
         except Exception as e:
             raise AIProcessingError(f"Failed to get image dimensions: {str(e)}")
     
-    async def extract_video_text(self, file_content: bytes) -> str:
+    def extract_video_text(self, file_content: bytes) -> str:
         """Extract text from video (placeholder - would need video processing)"""
         # This would require video processing libraries like moviepy
         # For now, return placeholder
         return "Video text extraction not implemented yet"
     
-    async def get_video_duration(self, file_content: bytes) -> int:
+    def get_video_duration(self, file_content: bytes) -> int:
         """Get video duration in seconds (placeholder)"""
         # This would require video processing libraries
         return 0
     
-    async def generate_summary(self, text: str) -> str:
+    def generate_summary(self, text: str) -> str:
         """Generate summary of text using AI"""
         if not settings.OPENAI_API_KEY:
             return self._generate_simple_summary(text)
         
         try:
-            response = await openai.ChatCompletion.acreate(
+            response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=[
                     {"role": "system", "content": "You are a helpful assistant that creates concise summaries of educational content in Italian."},
@@ -93,13 +93,13 @@ class AIService:
             # Fallback to simple summary
             return self._generate_simple_summary(text)
     
-    async def extract_keywords(self, text: str) -> List[str]:
+    def extract_keywords(self, text: str) -> List[str]:
         """Extract keywords from text using AI"""
         if not settings.OPENAI_API_KEY:
             return self._extract_simple_keywords(text)
         
         try:
-            response = await openai.ChatCompletion.acreate(
+            response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=[
                     {"role": "system", "content": "You are a helpful assistant that extracts key terms and concepts from educational content. Return only the keywords separated by commas."},
@@ -115,7 +115,7 @@ class AIService:
             # Fallback to simple keyword extraction
             return self._extract_simple_keywords(text)
     
-    async def detect_language(self, text: str) -> str:
+    def detect_language(self, text: str) -> str:
         """Detect language of text"""
         # Simple language detection based on common words
         italian_words = ['il', 'la', 'di', 'che', 'e', 'un', 'una', 'per', 'con', 'del', 'della']
@@ -127,7 +127,7 @@ class AIService:
         
         return "it" if italian_count > english_count else "en"
     
-    async def generate_quiz_questions(self, content: str, difficulty: str = "medium", num_questions: int = 5) -> List[Dict[str, Any]]:
+    def generate_quiz_questions(self, content: str, difficulty: str = "medium", num_questions: int = 5) -> List[Dict[str, Any]]:
         """Generate quiz questions from content"""
         if not settings.OPENAI_API_KEY:
             return self._generate_simple_quiz(content, num_questions)
@@ -151,7 +151,7 @@ class AIService:
             {content[:3000]}
             """
             
-            response = await openai.ChatCompletion.acreate(
+            response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=[
                     {"role": "system", "content": "You are an expert educator creating quiz questions. Always return valid JSON format."},
@@ -168,7 +168,7 @@ class AIService:
             # Fallback to simple quiz generation
             return self._generate_simple_quiz(content, num_questions)
     
-    async def generate_concept_map(self, content: str) -> Dict[str, Any]:
+    def generate_concept_map(self, content: str) -> Dict[str, Any]:
         """Generate concept map from content"""
         if not settings.OPENAI_API_KEY:
             return self._generate_simple_concept_map(content)
@@ -191,7 +191,7 @@ class AIService:
             {content[:3000]}
             """
             
-            response = await openai.ChatCompletion.acreate(
+            response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=[
                     {"role": "system", "content": "You are an expert educator creating concept maps. Always return valid JSON format."},

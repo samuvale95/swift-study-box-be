@@ -3,7 +3,6 @@ Base model with common fields
 """
 
 from sqlalchemy import Column, String, DateTime, func
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declared_attr
 import uuid
 from datetime import datetime
@@ -17,7 +16,7 @@ class BaseModel(Base):
     
     __abstract__ = True
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     

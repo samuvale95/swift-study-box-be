@@ -3,7 +3,6 @@ Upload model and related schemas
 """
 
 from sqlalchemy import Column, String, Integer, Float, Boolean, DateTime, ForeignKey, JSON, Text
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from typing import Optional, Dict, Any, List
@@ -24,8 +23,8 @@ class Upload(BaseModel):
     url = Column(String(1000), nullable=False)
     
     # Foreign keys
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    subject_id = Column(UUID(as_uuid=True), ForeignKey("subjects.id"), nullable=False)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
+    subject_id = Column(String(36), ForeignKey("subjects.id"), nullable=False)
     
     # Cloud service integration
     cloud_service = Column(String(50), nullable=True)  # google-drive, dropbox, onedrive
@@ -37,7 +36,7 @@ class Upload(BaseModel):
     processed_at = Column(DateTime(timezone=True), nullable=True)
     
     # File metadata
-    metadata = Column(JSON, default=dict)
+    file_metadata = Column(JSON, default=dict)
     
     # Relationships
     user = relationship("User", back_populates="uploads")

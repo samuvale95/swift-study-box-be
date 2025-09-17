@@ -4,7 +4,7 @@ Quiz schemas
 
 from datetime import datetime
 from typing import Optional, List, Dict, Any, Union
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 
 
 class QuizQuestionBase(BaseModel):
@@ -32,8 +32,7 @@ class QuizQuestionResponse(QuizQuestionBase):
     created_at: datetime
     updated_at: datetime
     
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 
 class QuizBase(BaseModel):
@@ -71,8 +70,7 @@ class QuizResponse(QuizBase):
     created_at: datetime
     updated_at: datetime
     
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 
 class QuizStartRequest(BaseModel):

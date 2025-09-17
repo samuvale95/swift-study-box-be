@@ -4,7 +4,7 @@ Upload schemas
 
 from datetime import datetime
 from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 from enum import Enum
 
 
@@ -65,12 +65,11 @@ class UploadResponse(UploadBase):
     status: UploadStatus
     processing_error: Optional[str] = None
     processed_at: Optional[datetime] = None
-    metadata: FileMetadata
+    file_metadata: FileMetadata
     created_at: datetime
     updated_at: datetime
     
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 
 class UploadStatusResponse(BaseModel):

@@ -3,7 +3,7 @@ Exam model and related schemas
 """
 
 from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey, JSON, Text
-from sqlalchemy.dialects.postgresql import UUID
+
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from typing import Optional, Dict, Any, List, Union
@@ -25,8 +25,8 @@ class Exam(BaseModel):
     passing_score = Column(Integer, default=60)  # percentage
     
     # Foreign keys
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    subject_id = Column(UUID(as_uuid=True), ForeignKey("subjects.id"), nullable=False)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
+    subject_id = Column(String(36), ForeignKey("subjects.id"), nullable=False)
     
     # Status
     is_active = Column(Boolean, default=True)
@@ -58,8 +58,8 @@ class ExamQuestion(BaseModel):
     points = Column(Integer, default=1)
     
     # Foreign keys
-    exam_id = Column(UUID(as_uuid=True), ForeignKey("exams.id"), nullable=False)
-    source_upload_id = Column(UUID(as_uuid=True), ForeignKey("uploads.id"), nullable=True)
+    exam_id = Column(String(36), ForeignKey("exams.id"), nullable=False)
+    source_upload_id = Column(String(36), ForeignKey("uploads.id"), nullable=True)
     
     # AI generation
     ai_generated = Column(Boolean, default=False)
@@ -67,18 +67,17 @@ class ExamQuestion(BaseModel):
     # Relationships
     exam = relationship("Exam", back_populates="questions")
     source_upload = relationship("Upload", back_populates="exam_questions")
-    user_answers = relationship("UserAnswer", back_populates="exam_question", cascade="all, delete-orphan")
+    user_answers = relationship("ExamUserAnswer", back_populates="exam_question", cascade="all, delete-orphan")
 
 
-class UserAnswer(BaseModel):
+class ExamUserAnswer(BaseModel):
     """User answer model for exams"""
     
     __tablename__ = "exam_user_answers"
     
     # Foreign keys
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    exam_question_id = Column(UUID(as_uuid=True), ForeignKey("exam_questions.id"), nullable=False)
-    study_session_id = Column(UUID(as_uuid=True), ForeignKey("study_sessions.id"), nullable=True)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
+    exam_question_id = Column(String(36), ForeignKey("exam_questions.id"), nullable=False)
     
     # Answer data
     answer = Column(JSON, nullable=False)  # Index, list of indices, or text
@@ -89,4 +88,3 @@ class UserAnswer(BaseModel):
     # Relationships
     user = relationship("User")
     exam_question = relationship("ExamQuestion", back_populates="user_answers")
-    study_session = relationship("StudySession", back_populates="user_answers")

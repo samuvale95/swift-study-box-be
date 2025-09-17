@@ -3,10 +3,10 @@ Subject model and related schemas
 """
 
 from sqlalchemy import Column, String, Integer, Float, DateTime, ForeignKey, JSON
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from typing import Optional, Dict, Any
+from datetime import datetime
 
 from app.models.base import BaseModel
 
@@ -22,7 +22,7 @@ class Subject(BaseModel):
     icon = Column(String(50), default="book")  # Icon name
     
     # Foreign keys
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
     
     # Statistics
     total_quizzes = Column(Integer, default=0)

@@ -42,7 +42,7 @@ class AuthService:
         self.db.commit()
         self.db.refresh(user)
         
-        return UserResponse.from_orm(user)
+        return UserResponse.model_validate(user)
     
     def authenticate_user(self, email: str, password: str) -> Optional[User]:
         """Authenticate user with email and password"""
@@ -77,7 +77,7 @@ class AuthService:
             access_token=tokens["access_token"],
             refresh_token=tokens["refresh_token"],
             token_type=tokens["token_type"],
-            user=UserResponse.from_orm(user)
+            user=UserResponse.model_validate(user)
         )
     
     def refresh_token(self, refresh_token: str) -> TokenResponse:
@@ -102,7 +102,7 @@ class AuthService:
                 access_token=tokens["access_token"],
                 refresh_token=tokens["refresh_token"],
                 token_type=tokens["token_type"],
-                user=UserResponse.from_orm(user)
+                user=UserResponse.model_validate(user)
             )
         
         except Exception as e:

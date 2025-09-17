@@ -29,7 +29,13 @@ Base = declarative_base()
 metadata = MetaData()
 
 # Redis connection
-redis_client = redis.from_url(settings.REDIS_URL, decode_responses=True)
+try:
+    redis_client = redis.from_url(settings.REDIS_URL, decode_responses=True)
+    # Test connection
+    redis_client.ping()
+except Exception as e:
+    print(f"Warning: Redis connection failed, some features will be disabled: {e}")
+    redis_client = None
 
 
 def get_db() -> Generator[Session, None, None]:

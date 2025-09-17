@@ -7,7 +7,7 @@ from typing import List, Optional, Dict, Any, Union
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
-from app.models.quiz import Quiz, QuizQuestion, UserAnswer
+from app.models.quiz import Quiz, QuizQuestion, QuizUserAnswer
 from app.models.upload import Upload
 from app.schemas.quiz import (
     QuizCreate, 
@@ -132,7 +132,7 @@ class QuizService:
                 correct_answers += 1
             
             # Save user answer
-            user_answer = UserAnswer(
+            user_answer = QuizUserAnswer(
                 user_id=user_id,
                 quiz_question_id=question.id,
                 answer=answer.answer,
@@ -167,14 +167,14 @@ class QuizService:
             ).all()
             
             for upload in uploads:
-                if upload.metadata and upload.metadata.get("extracted_text"):
-                    content += upload.metadata["extracted_text"] + "\n"
+                if upload.file_metadata and upload.file_metadata.get("extracted_text"):
+                    content += upload.file_metadata["extracted_text"] + "\n"
         
         if not content:
             raise ValidationError("No content available for quiz generation")
         
         # Generate questions using AI
-        ai_questions = await self.ai_service.generate_quiz_questions(
+        ai_questions = self.ai_service.generate_quiz_questions(
             content, 
             generation_data.difficulty, 
             generation_data.num_questions
@@ -256,7 +256,7 @@ class QuizService:
         total_questions = sum(len(quiz.questions) for quiz in quizzes)
         
         # Calculate average score from user answers
-        user_answers = self.db.query(UserAnswer).filter(UserAnswer.user_id == user_id).all()
+        user_answers = self.db.query(QuizUserAnswer).filter(QuizUserAnswer.user_id == user_id).all()
         total_score = sum(1 for answer in user_answers if answer.is_correct)
         total_answers = len(user_answers)
         average_score = (total_score / total_answers * 100) if total_answers > 0 else 0
