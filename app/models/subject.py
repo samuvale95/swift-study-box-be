@@ -43,6 +43,7 @@ class Subject(BaseModel):
     concept_maps = relationship("ConceptMap", back_populates="subject", cascade="all, delete-orphan")
     study_sessions = relationship("StudySession", back_populates="subject", cascade="all, delete-orphan")
     progress = relationship("Progress", back_populates="subject", cascade="all, delete-orphan")
+    grades = relationship("Grade", back_populates="subject", cascade="all, delete-orphan")
 
 
 class SubjectStats:

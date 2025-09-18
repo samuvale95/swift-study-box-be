@@ -29,6 +29,27 @@ def get_exam_service(db: Session = Depends(get_db)) -> ExamService:
     return ExamService(db)
 
 
+@router.get("/stats", response_model=ExamStats)
+async def get_exam_stats(
+    subject_id: Optional[str] = None,
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
+    exam_service: ExamService = Depends(get_exam_service)
+):
+    """Get exam statistics"""
+    try:
+        if not credentials:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+        
+        user_id = get_current_user_id(credentials.credentials)
+        stats = exam_service.get_exam_stats(user_id, subject_id)
+        return stats
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+
+
 @router.get("/", response_model=List[ExamResponse])
 async def get_exams(
     subject_id: Optional[str] = None,
@@ -264,25 +285,3 @@ async def generate_exam(
         )
 
 
-@router.get("/stats", response_model=ExamStats)
-async def get_exam_stats(
-    subject_id: Optional[str] = None,
-    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
-    exam_service: ExamService = Depends(get_exam_service)
-):
-    """Get exam statistics"""
-    try:
-        if not credentials:
-
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
-
-        
-
-        user_id = get_current_user_id(credentials.credentials)
-        stats = exam_service.get_exam_stats(user_id, subject_id)
-        return stats
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )

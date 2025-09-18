@@ -42,7 +42,12 @@ class User(BaseModel):
     
     # OAuth providers
     google_id = Column(String(255), nullable=True, unique=True)
+    apple_id = Column(String(255), nullable=True, unique=True)
     microsoft_id = Column(String(255), nullable=True, unique=True)
+    
+    # OAuth provider info
+    oauth_provider = Column(String(50), nullable=True)  # google, apple, microsoft
+    oauth_data = Column(JSON, nullable=True)  # Store additional OAuth data
     
     # Relationships
     subjects = relationship("Subject", back_populates="user", cascade="all, delete-orphan")
@@ -52,6 +57,7 @@ class User(BaseModel):
     concept_maps = relationship("ConceptMap", back_populates="user", cascade="all, delete-orphan")
     study_sessions = relationship("StudySession", back_populates="user", cascade="all, delete-orphan")
     progress = relationship("Progress", back_populates="user", cascade="all, delete-orphan")
+    grades = relationship("Grade", back_populates="user", cascade="all, delete-orphan")
 
 
 class UserPreferences:
